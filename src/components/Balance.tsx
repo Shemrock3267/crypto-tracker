@@ -159,7 +159,7 @@ const Balance = () => {
                 color: themeColors['SECONDARY_COLOR'],
               }}
             >
-              {$l('APP_WALLET_CONNECT_METAMASK_BTN_TITLE')}
+              {$l('APP_WALLET_TRANSFER_COINS_TITLE')}
             </Button>
           </CardBody>
         </Card>

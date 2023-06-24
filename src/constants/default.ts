@@ -6,6 +6,7 @@ export default {
   APP_SIDEBAR_NAV_WALLET: 'Wallet',
   APP_WALLET_BALANCE_TITLE: 'Ethereum Balance: ',
   APP_WALLET_SEND_TO_TITLE: 'Transfer Ethereum to:',
+  APP_WALLET_TRANSFER_COINS_TITLE: 'Send',
   APP_WALLET_SENT_TO_PLACEHOLDER: 'Enter ETH wallet address...',
   APP_WALLET_ADDRESS_TITLE: 'Wallet Address:',
   APP_WALLET_INCORRECT_INPUT_ADDRESS: 'Please enter correct ETH address',
