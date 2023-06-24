@@ -1,0 +1,1 @@
+export const getSmallImg = (image: string) => image.replace('large', 'small');
