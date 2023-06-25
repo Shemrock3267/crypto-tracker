@@ -13,19 +13,22 @@ import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
 
 import { $l } from '../utils/getLocale';
+import getBalance from '../utils/getBalance';
+import getUserAccountAddress from '../utils/getUserAccountAddress';
 import {
   themeColors,
   successProgressBarColor,
   errorProgressBarColor,
   hoverBtnColor,
 } from '../constants/styles';
+import switchToGoerliNetwork from '../utils/switchToGoerliNetwork';
 
 const Balance = () => {
   const [userWalletAddress, setUserWalletAddress] = useState('');
   const [recipientWalletAddress, setRecipientWalletAddress] = useState('');
   const [isAddressValid, setIsAddressValid] = useState(true);
   const [isTransferValValid, setIsTransferValValid] = useState(true);
-  const [userBalance, setUserBalance] = useState(0);
+  const [userBalance, setUserBalance] = useState('');
   const [transferVal, setTransferVal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -56,6 +59,8 @@ const Balance = () => {
 
       // Check the transaction status
       if (receipt.status === 1) {
+        await getBalance(setUserBalance);
+
         toast.success(
           $l('APP_WALLET_TRANSACTION_SUCCESS_DESC'),
           successProgressBarColor
@@ -84,7 +89,7 @@ const Balance = () => {
   };
 
   const validateBalance = () => {
-    const isValid = transferVal <= userBalance;
+    const isValid = transferVal <= +userBalance;
     setIsTransferValValid(isValid);
   };
 
@@ -92,49 +97,14 @@ const Balance = () => {
     if (window.ethereum) {
       const goerliEthTestNetId = $l('APP_WALLET_GOERLI_TESTNETWORK_ID');
       try {
-        const accounts = await window.ethereum.request({
-          method: 'eth_requestAccounts',
-        });
-        const acc = accounts[0];
+        await getUserAccountAddress(setUserWalletAddress);
+        await switchToGoerliNetwork(goerliEthTestNetId);
+        await getBalance(setUserBalance);
 
-        setUserWalletAddress(acc);
         toast.success(
           $l('APP_WALLET_NOTIFICATION_CONNECT_SUCCESS'),
           successProgressBarColor
         );
-
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-        // Switch to Goerli testnet
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: goerliEthTestNetId }],
-          });
-          toast.success(
-            $l('APP_WALLET_GOERLI_TESTNETWORK_SWITCH_SUCCESS'),
-            successProgressBarColor
-          );
-        } catch (err: any) {
-          // This error code indicates that the chain has not been added to MetaMask.
-          if (err.code === 4902) {
-            toast.error(
-              $l('APP_WALLET_GOERLI_TESTNETWORK_UNAVAILABLE'),
-              errorProgressBarColor
-            );
-          }
-          toast.error(
-            $l('APP_WALLET_GOERLI_TESTNETWORK_SWITCH_FAILED'),
-            errorProgressBarColor
-          );
-        }
-
-        const retrieveBalance = async () => {
-          const balance = await provider.getBalance(acc);
-          const etherBalance = ethers.utils.formatEther(balance);
-          setUserBalance(+etherBalance);
-        };
-        await retrieveBalance();
       } catch (err: any) {
         toast.error(
           err?.data?.message || `Failed to connect: ${err?.data?.message}`,
@@ -151,7 +121,7 @@ const Balance = () => {
 
   const handleDisconnectWallet = () => {
     setUserWalletAddress('');
-    setUserBalance(0);
+    setUserBalance('');
   };
 
   return (
