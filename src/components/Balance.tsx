@@ -24,20 +24,56 @@ const Balance = () => {
   const [userWalletAddress, setUserWalletAddress] = useState('');
   const [recipientWalletAddress, setRecipientWalletAddress] = useState('');
   const [isAddressValid, setIsAddressValid] = useState(true);
-  const [userBalance, setUserBalance] = useState('');
+  const [isTransferValValid, setIsTransferValValid] = useState(true);
+  const [userBalance, setUserBalance] = useState(0);
+  const [transferVal, setTransferVal] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRecipientWalletAddress(event.target.value);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRecipientWalletAddress(e.target.value);
   };
 
   const handleSendCoins = async () => {
-    if (!isAddressValid) return;
+    if (!isAddressValid || !isTransferValValid) return;
     if (recipientWalletAddress.length === 0) return setIsAddressValid(false);
-    /** ToDo: Handle the logic for sending Ethereum to the provided wallet address */
-    const transactionParams = {
-      from: userWalletAddress,
-      to: recipientWalletAddress,
-    };
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const userAddress = await signer.getAddress();
+
+    try {
+      const weiAmount = ethers.utils.parseEther(transferVal.toString()); // Convert transferVal to Wei
+      const transactionParams = {
+        from: userAddress,
+        to: recipientWalletAddress,
+        value: weiAmount,
+      };
+      setIsLoading(true);
+
+      const transaction = await signer.sendTransaction(transactionParams);
+      const receipt = await provider.waitForTransaction(transaction.hash);
+      setIsLoading(false);
+
+      // Check the transaction status
+      if (receipt.status === 1) {
+        toast.success(
+          $l('APP_WALLET_TRANSACTION_SUCCESS_DESC'),
+          successProgressBarColor
+        );
+      } else {
+        toast.error(
+          $l('APP_WALLET_TRANSACTION_FAILURE_DESC'),
+          errorProgressBarColor
+        );
+      }
+    } catch (err: any) {
+      toast.error(err.message, errorProgressBarColor);
+    }
+  };
+
+  const handleTransferValChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    setTransferVal(value);
   };
 
   const validateAddress = () => {
@@ -45,6 +81,11 @@ const Balance = () => {
     const res = addressRegex.test(recipientWalletAddress);
     if (recipientWalletAddress.length === 0) return;
     setIsAddressValid(res);
+  };
+
+  const validateBalance = () => {
+    const isValid = transferVal <= userBalance;
+    setIsTransferValValid(isValid);
   };
 
   const handleConnectWallet = async () => {
@@ -64,11 +105,7 @@ const Balance = () => {
 
         const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-        const chainId = await window.ethereum.request({
-          method: 'eth_chainId',
-        });
-        console.log('chain id:', chainId);
-
+        // Switch to Goerli testnet
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
@@ -95,7 +132,7 @@ const Balance = () => {
         const retrieveBalance = async () => {
           const balance = await provider.getBalance(acc);
           const etherBalance = ethers.utils.formatEther(balance);
-          setUserBalance(etherBalance);
+          setUserBalance(+etherBalance);
         };
         await retrieveBalance();
       } catch (err: any) {
@@ -114,7 +151,7 @@ const Balance = () => {
 
   const handleDisconnectWallet = () => {
     setUserWalletAddress('');
-    setUserBalance('');
+    setUserBalance(0);
   };
 
   return (
@@ -159,7 +196,7 @@ const Balance = () => {
             {$l('APP_WALLET_SEND_TO_TITLE')}
           </CardHeader>
           <CardBody>
-            <Flex minHeight='75px' direction='column'>
+            <Flex minHeight='50px' direction='column'>
               <Input
                 type='text'
                 placeholder={$l('APP_WALLET_SENT_TO_PLACEHOLDER')}
@@ -170,10 +207,23 @@ const Balance = () => {
                 isInvalid={!isAddressValid}
                 errorBorderColor='crimson'
               />
-
               {!isAddressValid && (
                 <Text color={themeColors['DECLINE_COLOR']} fontSize='sm'>
                   {$l('APP_WALLET_INCORRECT_INPUT_ADDRESS')}
+                </Text>
+              )}
+            </Flex>
+            <Flex minHeight='50px' direction='column'>
+              <Input
+                value={transferVal >= 0 ? transferVal : 0}
+                onChange={handleTransferValChange}
+                onBlur={validateBalance}
+                onFocus={() => setIsTransferValValid(true)}
+                isInvalid={!isTransferValValid}
+              />
+              {!isTransferValValid && (
+                <Text color={themeColors['DECLINE_COLOR']} fontSize='sm'>
+                  {$l('APP_WALLET_INCORRECT_INPUT_TRANSFER_VAL')}
                 </Text>
               )}
             </Flex>
@@ -181,6 +231,7 @@ const Balance = () => {
               fontWeight='700'
               onClick={handleSendCoins}
               _hover={hoverBtnColor}
+              isDisabled={isLoading}
             >
               {$l('APP_WALLET_TRANSFER_COINS_TITLE')}
             </Button>

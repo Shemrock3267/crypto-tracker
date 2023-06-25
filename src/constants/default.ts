@@ -25,4 +25,8 @@ export default {
     'This Goerli testnetwork is not available in your Metamask, please add it',
   APP_WALLET_GOERLI_TESTNETWORK_SWITCH_FAILED:
     'Failed to switch to the Goerli testnetwork',
+  APP_WALLET_INCORRECT_INPUT_TRANSFER_VAL:
+    'You have insufficient balance, change amount please',
+  APP_WALLET_TRANSACTION_SUCCESS_DESC: 'Trasaction completed',
+  APP_WALLET_TRANSACTION_FAILURE_DESC: 'Transaction failed',
 } as ILocales;
