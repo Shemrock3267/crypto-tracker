@@ -25,7 +25,7 @@ const Balance = () => {
   const [recipientWalletAddress, setRecipientWalletAddress] = useState('');
   const [isAddressValid, setIsAddressValid] = useState(true);
   const [isTransferValValid, setIsTransferValValid] = useState(true);
-  const [userBalance, setUserBalance] = useState(0);
+  const [userBalance, setUserBalance] = useState('');
   const [transferVal, setTransferVal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -84,7 +84,7 @@ const Balance = () => {
   };
 
   const validateBalance = () => {
-    const isValid = transferVal <= userBalance;
+    const isValid = transferVal <= +userBalance;
     setIsTransferValValid(isValid);
   };
 
@@ -132,7 +132,7 @@ const Balance = () => {
         const retrieveBalance = async () => {
           const balance = await provider.getBalance(acc);
           const etherBalance = ethers.utils.formatEther(balance);
-          setUserBalance(+etherBalance);
+          setUserBalance(etherBalance);
         };
         await retrieveBalance();
       } catch (err: any) {
@@ -151,7 +151,7 @@ const Balance = () => {
 
   const handleDisconnectWallet = () => {
     setUserWalletAddress('');
-    setUserBalance(0);
+    setUserBalance('');
   };
 
   return (
