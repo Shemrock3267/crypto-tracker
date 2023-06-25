@@ -19,4 +19,10 @@ export default {
   APP_WALLET_NOTIFICATION_METAMASK_MISSING: 'Metamask not detected',
   APP_WALLET_STATUS_NOT_CONNECTED: 'Not connected',
   APP_WALLET_GOERLI_TESTNETWORK_ID: '0x5',
+  APP_WALLET_GOERLI_TESTNETWORK_SWITCH_SUCCESS:
+    'You have succefully switched to Goerli Test Network',
+  APP_WALLET_GOERLI_TESTNETWORK_UNAVAILABLE:
+    'This Goerli testnetwork is not available in your Metamask, please add it',
+  APP_WALLET_GOERLI_TESTNETWORK_SWITCH_FAILED:
+    'Failed to switch to the Goerli testnetwork',
 } as ILocales;

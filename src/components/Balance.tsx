@@ -75,18 +75,21 @@ const Balance = () => {
             params: [{ chainId: goerliEthTestNetId }],
           });
           toast.success(
-            'You have succefully switched to Goerli Test Network',
+            $l('APP_WALLET_GOERLI_TESTNETWORK_SWITCH_SUCCESS'),
             successProgressBarColor
           );
         } catch (err: any) {
           // This error code indicates that the chain has not been added to MetaMask.
           if (err.code === 4902) {
             toast.error(
-              'This network is not available in your Metamask, please add it',
+              $l('APP_WALLET_GOERLI_TESTNETWORK_UNAVAILABLE'),
               errorProgressBarColor
             );
           }
-          toast.error('Failed to switch to the network', errorProgressBarColor);
+          toast.error(
+            $l('APP_WALLET_GOERLI_TESTNETWORK_SWITCH_FAILED'),
+            errorProgressBarColor
+          );
         }
 
         const retrieveBalance = async () => {
