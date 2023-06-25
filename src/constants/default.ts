@@ -17,5 +17,6 @@ export default {
   APP_WALLET_ETH_SYMBOL: 'ETH',
   APP_WALLET_NOTIFICATION_CONNECT_SUCCESS: 'Successfully connected to Metamask',
   APP_WALLET_NOTIFICATION_METAMASK_MISSING: 'Metamask not detected',
-  APP_WALLET_STATUS_NOT_CONNECTED: 'Not connected'
+  APP_WALLET_STATUS_NOT_CONNECTED: 'Not connected',
+  APP_WALLET_GOERLI_TESTNETWORK_ID: '0x5',
 } as ILocales;

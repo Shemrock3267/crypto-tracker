@@ -13,7 +13,12 @@ import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
 
 import { $l } from '../utils/getLocale';
-import { themeColors } from '../constants/styles';
+import {
+  themeColors,
+  successProgressBarColor,
+  errorProgressBarColor,
+  hoverBtnColor,
+} from '../constants/styles';
 
 const Balance = () => {
   const [userWalletAddress, setUserWalletAddress] = useState('');
@@ -29,6 +34,10 @@ const Balance = () => {
     if (!isAddressValid) return;
     if (recipientWalletAddress.length === 0) return setIsAddressValid(false);
     /** ToDo: Handle the logic for sending Ethereum to the provided wallet address */
+    const transactionParams = {
+      from: userWalletAddress,
+      to: recipientWalletAddress,
+    };
   };
 
   const validateAddress = () => {
@@ -40,6 +49,7 @@ const Balance = () => {
 
   const handleConnectWallet = async () => {
     if (window.ethereum) {
+      const goerliEthTestNetId = $l('APP_WALLET_GOERLI_TESTNETWORK_ID');
       try {
         const accounts = await window.ethereum.request({
           method: 'eth_requestAccounts',
@@ -47,13 +57,37 @@ const Balance = () => {
         const acc = accounts[0];
 
         setUserWalletAddress(acc);
-        toast.success($l('APP_WALLET_NOTIFICATION_CONNECT_SUCCESS'), {
-          progressStyle: {
-            background: themeColors['MAIN_COLOR'],
-          },
-        });
+        toast.success(
+          $l('APP_WALLET_NOTIFICATION_CONNECT_SUCCESS'),
+          successProgressBarColor
+        );
 
         const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+        const chainId = await window.ethereum.request({
+          method: 'eth_chainId',
+        });
+        console.log('chain id:', chainId);
+
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: goerliEthTestNetId }],
+          });
+          toast.success(
+            'You have succefully switched to Goerli Test Network',
+            successProgressBarColor
+          );
+        } catch (err: any) {
+          // This error code indicates that the chain has not been added to MetaMask.
+          if (err.code === 4902) {
+            toast.error(
+              'This network is not available in your Metamask, please add it',
+              errorProgressBarColor
+            );
+          }
+          toast.error('Failed to switch to the network', errorProgressBarColor);
+        }
 
         const retrieveBalance = async () => {
           const balance = await provider.getBalance(acc);
@@ -64,19 +98,14 @@ const Balance = () => {
       } catch (err: any) {
         toast.error(
           err?.data?.message || `Failed to connect: ${err?.data?.message}`,
-          {
-            progressStyle: {
-              background: themeColors['DECLINE_COLOR'],
-            },
-          }
+          errorProgressBarColor
         );
       }
     } else {
-      toast.error($l('APP_WALLET_NOTIFICATION_METAMASK_MISSING'), {
-        progressStyle: {
-          background: themeColors['DECLINE_COLOR'],
-        },
-      });
+      toast.error(
+        $l('APP_WALLET_NOTIFICATION_METAMASK_MISSING'),
+        errorProgressBarColor
+      );
     }
   };
 
@@ -106,10 +135,7 @@ const Balance = () => {
             <Button
               fontWeight='700'
               onClick={handleConnectWallet}
-              _hover={{
-                bg: themeColors['MAIN_COLOR'],
-                color: themeColors['SECONDARY_COLOR'],
-              }}
+              _hover={hoverBtnColor}
             >
               {$l('APP_WALLET_CONNECT_METAMASK_BTN_TITLE')}
             </Button>
@@ -117,10 +143,7 @@ const Balance = () => {
             <Button
               fontWeight='700'
               onClick={handleDisconnectWallet}
-              _hover={{
-                bg: themeColors['MAIN_COLOR'],
-                color: themeColors['SECONDARY_COLOR'],
-              }}
+              _hover={hoverBtnColor}
             >
               {$l('APP_WALLET_DISCONNECT_METAMASK_BTN_TITLE')}
             </Button>
@@ -154,10 +177,7 @@ const Balance = () => {
             <Button
               fontWeight='700'
               onClick={handleSendCoins}
-              _hover={{
-                bg: themeColors['MAIN_COLOR'],
-                color: themeColors['SECONDARY_COLOR'],
-              }}
+              _hover={hoverBtnColor}
             >
               {$l('APP_WALLET_TRANSFER_COINS_TITLE')}
             </Button>

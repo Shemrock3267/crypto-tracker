@@ -24,7 +24,7 @@ import {
   MobileProps,
 } from '../types/sidebar';
 import { $l } from '../utils/getLocale';
-import { themeColors } from '../constants/styles';
+import { themeColors, hoverBtnColor } from '../constants/styles';
 
 const LinkItems: Array<LinkItemProps> = [
   { name: $l('APP_SIDEBAR_NAV_DASHBOARD'), icon: BsGraphUp, to: '/' },
@@ -123,10 +123,7 @@ const NavItem = ({ icon, children, ...rest }: NavItemProps) => {
       role='group'
       cursor='pointer'
       fontWeight='700'
-      _hover={{
-        bg: themeColors['MAIN_COLOR'],
-        color: themeColors['SECONDARY_COLOR'],
-      }}
+      _hover={hoverBtnColor}
       {...rest}
     >
       {icon && (
